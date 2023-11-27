@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import saveToGrist from './handleKeyValue';
 
 interface TranslationFormat {
   project: string;
@@ -15,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
   ];
 
   let disposable = vscode.commands.registerCommand(
-    'extension.transformText',
+    'extension.translateText',
     async () => {
       const editor = vscode.window.activeTextEditor;
 
@@ -48,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       let transformedText = transformText(selectedText, selectedPrefix);
 
-      if (selectedText.split(/\s+/).length > 5) {
+      if (selectedText.split(/\s+/).length > 4) {
         const customKey = await vscode.window.showInputBox({
           prompt: 'Enter a custom key',
           placeHolder: 'eg. BANK_HACKED',
@@ -115,7 +116,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             fileContent = `${beforeContent.join(
               '\n'
-            )}\n${newKeyValuePair}${afterContent.join('\n')}\n`;
+            )}\n${newKeyValuePair}${afterContent.join('\n')}`;
             fs.writeFileSync(fullPath, fileContent);
           }
         } else {
@@ -133,6 +134,8 @@ export function activate(context: vscode.ExtensionContext) {
           `${translationStatement[0].start}${transformedText}${translationStatement[0].end}`
         );
       });
+    saveToGrist(transformedText, selectedText);
+
     }
   );
 
